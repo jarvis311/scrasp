@@ -83,7 +83,23 @@ var PriceVariant_schema = new mongoose.Schema({
     is_scrapping: {
         type: Number,
         default: 0
-    }
+    },
+    created_at: {
+        type:Date,
+        default:null
+    },
+    updated_at: {
+        type:Date,
+        default:null
+    },
+    deleted_at: {
+        type:Date,
+        default:null
+    },
+    deleted_by: {
+        type:Number,
+        default:0
+    },
 }, { timestamps: true })
 
 

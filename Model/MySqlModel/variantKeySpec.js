@@ -49,16 +49,12 @@ export const VariantkeySpec = sequelize.define("variant_key_specs", {
     },
     created_at: {
         type: DataTypes.DATE,
+        defaultValue:null
     },
     updated_at: {
         type: DataTypes.DATE,
-    },
-    createdAt: {
-        type: DataTypes.DATE,
-    },
-    updatedAt: {
-        type: DataTypes.DATE,
-    },
+        defaultValue:null
+    }
 }, {
     tableName: "variant_key_specs",
     timestamps: false

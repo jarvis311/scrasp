@@ -5,9 +5,6 @@ var VariantKeySpec = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    // varint_mongo_id: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    // },
     vehicle_information_id: {
         type: mongoose.Schema.Types.ObjectId,
     },
@@ -66,7 +63,31 @@ var VariantKeySpec = new mongoose.Schema({
     is_scraping: {
         type: Number,
         default: 0
-    }
+    },
+    created_at:{
+        type:Date,
+        default:null
+    },
+    updated_at:{
+        type:Date,
+        default:null
+    },
+    created_at:{
+        type:Date,
+        default:null
+    },
+    updated_at:{
+        type:Date,
+        default:null
+    },
+    createdAt: {
+        type: Date,
+        default:null
+    },
+    updatedAt: {
+        type: Date,
+        default:null
+    },
 }, { timestamps: true })
 
 // var inc = 1

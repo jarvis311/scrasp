@@ -6,7 +6,7 @@ import MysqltoMongodb from '../controller/MysqltoMongodb.js';
 import ScrappingCarConroller from '../controller/CarScrappingController.js';
 import mongoose from 'mongoose';
 import { filterByBrand, filterByCategory, getBrands, getCategory, getVehicleInformationData, postDataIntoMysql } from '../controller/GetVehicleInformation.controller.js';
-import { MysqlToMongodbConvertDatabaseBodyType, MysqlToMongodbConvertDatabaseBrand, MysqlToMongodbConvertDatabaseCategory, MysqlToMongodbConvertDatabaseKeyspecification, MysqltoMongodbConver } from '../controller/MongooseToMysql.js';
+import { MysqlToMongodbConvertDatabaseBodyType, MysqlToMongodbConvertDatabaseBrand, MysqlToMongodbConvertDatabaseCategory, MysqlToMongodbConvertDatabaseKeyspecification, MysqlToMongodbConvertDatabaseModelColor, MysqlToMongodbConvertDatabasePriceVariant, MysqlToMongodbConvertDatabaseVariantKeySpecification, MysqlToMongodbConvertDatabaseVariantSpecification, MysqlToMongodbConvertDatabaseVehicleInformation, MysqltoMongodbConver } from '../controller/MongooseToMysql.js';
 
 router.post('/scrap_bike', Bikecontroler.scrap_data)
 
@@ -35,6 +35,11 @@ router.post("/mongo-tomysql", MysqltoMongodbConver)
 router.post("/mysqlToMongodbCategory", MysqlToMongodbConvertDatabaseCategory)
 router.post("/mysqlToMongodbBrand", MysqlToMongodbConvertDatabaseBrand)
 router.post("/mysqlToMongodbBodytype", MysqlToMongodbConvertDatabaseBodyType)
+router.post("/mysqlToMongodbVariantKeySpecification", MysqlToMongodbConvertDatabaseVariantKeySpecification)
+router.post("/mysqlToMongodbVehiclesInfo", MysqlToMongodbConvertDatabaseVehicleInformation)
+router.post("/mysqlToMongodbPriceVariant", MysqlToMongodbConvertDatabasePriceVariant)
+router.post("/mysqlToMongodbModelColor", MysqlToMongodbConvertDatabaseModelColor)
+router.post("/mysqlToMongodbVariantSpec", MysqlToMongodbConvertDatabaseVariantSpecification)
 router.post("/mysqlToMongodbKeyspec", MysqlToMongodbConvertDatabaseKeyspecification)
 
 // router.post("/addBodyType", addBodyType)

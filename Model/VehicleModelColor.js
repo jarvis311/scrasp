@@ -15,7 +15,23 @@ var vehicle_model_colorSchema = new mongoose.Schema({
     image: {
         type: String,
         default: null
-    }
+    },
+    created_at:{
+        type:Date,
+        default:null
+    },
+    updated_at:{
+        type:Date,
+        default:null
+    },
+    deleted_at:{
+        type:Date,
+        default:null
+    },
+    deleted_by:{
+        type:Number,
+        default:0
+    },
 }, { timestamps: true })
 
 const vehicle_model_color = mongoose.model('vehicle_model_color', vehicle_model_colorSchema)

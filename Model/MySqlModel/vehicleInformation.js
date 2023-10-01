@@ -208,7 +208,7 @@ export const VehicleInformationTable = sequelize.define("vehicle_informations", 
     // rating: { type: DataTypes.STRING, defaultValue: 0 },
 },
     {
-        tableName: "vehicle_information",
+        tableName: "vehicle_informations",
         timestamps: false
     })
 

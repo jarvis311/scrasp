@@ -5,17 +5,20 @@ import Brands from "../Model/Brands.js";
 import vehicle_information from "../Model/VehicleInformation.js";
 import { ModelColorTable } from "../Model/MySqlModel/modelColor.js";
 import { PriceVariantTable } from "../Model/MySqlModel/priceVariant.js";
-import { VariantkeySpec } from "../Model/MySqlModel/variantKeySpec.js";
+import { VariantkeySpec} from "../Model/MySqlModel/variantKeySpec.js";
 import { VariantSpecificationsTable } from "../Model/MySqlModel/variantSpecifications.js";
 import { CategoriesTable } from "../Model/MySqlModel/categories.js";
-import VariantSpecification from "../Model/VariantSpecification.js";
-import { where } from "sequelize";
-import Categories from "../Model/categories.js";
 import { BrandTable } from "../Model/MySqlModel/brands.js";
 import { ModelBodyTypeTable } from "../Model/MySqlModel/bodytypes.js";
-import bodytypes from "../Model/BodyType.js";
 import { KeyspecificationTable } from "../Model/MySqlModel/keyspecification.js";
+
+import VariantSpecification from "../Model/VariantSpecification.js";
+import bodytypes from "../Model/BodyType.js";
 import keyspecification from "../Model/keyspecification.js";
+import Categories from "../Model/categories.js";
+import PriceVariant from "../Model/priceVariant.js";
+import VariantKey from "../Model/VariantKeySpec.js";
+import vehicle_model_color from "../Model/VehicleModelColor.js";
 
 
 export const MysqlToMongodbConvertDatabaseCategory = async (req, res) => {
@@ -112,17 +115,24 @@ export const MysqlToMongodbConvertDatabaseKeyspecification = async (req, res) =>
     res.json("Keyspecification Addedd!!")
 }
 export const MysqlToMongodbConvertDatabaseVehicleInformation = async (req, res) => {
-
     const GetData = await VehicleInformationTable.findAll({})
     for (const item of GetData) {
-        const findkeyspec = await vehicle_information.findOne({ id: item.php_id })
-        if (!findkeyspec) {
-            const brand_id = await Brands.findOne({ id: item })
+        const findvehicles = await vehicle_information.findOne({ php_id: item.id, model_name:item.model_name })
+        if (!findvehicles) {
+            const brand_id = await Brands.findOne({ php_id: item.brand_id }).select({_id: 1})
+            const category_id = await Categories.findOne({php_id:item.category_id}).select({_id: 1})
+            const bodytype_id = await bodytypes.findOne({php_id:item.bodytype_id}).select({_id: 1})
+
+          await console.log("Id id geted!!",brand_id)
+
             await vehicle_information.create({
                 php_id: item.id,
-                brand_id: item.brand_id,
-                category_id: item.category_id,
-                bodytype_id: item.bodytype_id,
+                brand_id:brand_id?._id || null,
+                category_id:category_id?._id || null,
+                bodytype_id:bodytype_id?._id || null,
+                category_php_id: item.category_id,
+                brand_php_id: item.brand_id,
+                php_bodytype_id: item.bodytype_id,
                 bind_id: item.bind_id,
                 model_name: item.model_name,
                 fuel_type: item.fuel_type,
@@ -132,10 +142,9 @@ export const MysqlToMongodbConvertDatabaseVehicleInformation = async (req, res) 
                 min_price: item.min_price,
                 max_price: item.max_price,
                 price_range: item.price_range,
-                search_count: item.search_count,
-                popular_count: item.popular_count,
                 image: item.image,
-                status: item.status,
+                status: item.status,  
+                is_designer: item.is_designer,
                 launched_at: item.launched_at,
                 Launch_date: item.Launch_date,
                 model_popularity: item.model_popularity,
@@ -144,11 +153,6 @@ export const MysqlToMongodbConvertDatabaseVehicleInformation = async (req, res) 
                 style_type: item.style_type,
                 max_power: item.max_power,
                 showroom_price: item.showroom_price,
-                rto_price: item.rto_price,
-                insurance_price: item.insurance_price,
-                other_price: item.other_price,
-                is_content_writer: item.is_content_writer,
-                is_designer: item.is_designer,
                 on_road_price: item.on_road_price,
                 is_popular_search: item.is_popular_search,
                 is_upcoming: item.is_upcoming,
@@ -157,8 +161,14 @@ export const MysqlToMongodbConvertDatabaseVehicleInformation = async (req, res) 
                 highlights_desc: item.highlights_desc,
                 key_specs: item.key_specs,
                 manufacturer_desc: item.manufacturer_desc,
-                is_recommended: item.is_recommended,
                 link: item.link,
+                rto_price: item.rto_price,
+                insurance_price: item.insurance_price,
+                other_price: item.other_price,
+                is_content_writer: item.is_content_writer,
+                search_count: item.search_count,
+                popular_count: item.popular_count,
+                is_recommended: item.is_recommended,
                 headtag: item.headtag,
                 created_at: item.created_at,
                 updated_at: item.updated_at,
@@ -167,13 +177,143 @@ export const MysqlToMongodbConvertDatabaseVehicleInformation = async (req, res) 
                 createdAt: item.createdAt,
                 updatedAt: item.updatedAt,
             })
+            await console.log("Id id geted!!")
+
         }
     }
-    res.json("Keyspecification Addedd!!")
+    res.json("VehiclesInfo Addedd!!")
 }
+export const MysqlToMongodbConvertDatabasePriceVariant = async (req, res) => {
 
+    const GetData = await PriceVariantTable.findAll({})
 
+    for (const item of GetData) {
+        const findPriceVariant = await PriceVariant.findOne({ name: item.name })
 
+        if (!findPriceVariant) {
+
+        const findvehicleId = await vehicle_information.findOne({ php_id: item.vehicle_information_id })
+
+            await PriceVariant.create({
+                        php_id:item.id,
+                        vehicle_information_id:findvehicleId?._id || null,
+                        php_vehicle_information_id:item.vehicle_information_id,
+                        name:item.name,
+                        link:item.link,
+                        engine:item.engine,
+                        price_range:item.price_range,
+                        price:item.price,
+                        review_count:item.review_count,
+                        rating:item.rating,
+                        status:item.status,
+                        fuel_type:item.fuel_type,
+                        ex_show_room_rice:item.ex_show_room_rice,
+                        mileage:item.mileage,
+                        rto_price:item.rto_price,
+                        insurance_price:item.insurance_price,
+                        other_price:item.other_price,
+                        on_road_price:item.on_road_price,
+                        latest_update:item.latest_update,
+                        is_scrapping:item.is_scrapping,
+                        launched_at:item.launched_at,
+                        image:item.image,
+                        created_at:item.created_at,
+                        updated_at:item.updated_at,
+                        deleted_at:item.deleted_at,
+                        deleted_by:item.deleted_by,
+            })
+        }
+    }
+    res.json("PriceVariant Addedd!!")
+}
+export const MysqlToMongodbConvertDatabaseModelColor = async (req, res) => {
+
+    const GetData = await ModelColorTable.findAll({})
+
+    for (const item of GetData) {
+        const findModelColor = await vehicle_model_color.findOne({ color_name: item.color_name })
+
+        if (!findModelColor) {
+        const findvehicleId = await vehicle_information.findOne({ php_id: item.vehicle_information_id })
+
+            await vehicle_model_color.create({
+                    php_id:item.id,
+                    vehicle_information_id:findvehicleId?._id || null,
+                    php_vehicle_information_id:item.vehicle_information_id,
+                    color_name:item.color_name,
+                    color_code:item.color_code,
+                    image:item.image,
+                    created_at:item.created_at,
+                    updated_at:item.updated_at,
+                    deleted_at:item.deleted_at,
+                    deleted_by:item.deleted_by,
+                
+            })
+        }
+    }
+    res.json("ModelColor Addedd!!")
+}
+export const MysqlToMongodbConvertDatabaseVariantSpecification = async (req, res) => {
+
+    const GetData = await VariantSpecificationsTable.findAll({})
+    for (const item of GetData) {
+        const findSpecification = await VariantSpecification.findOne({ name: item.name })
+
+        if (!findSpecification) {
+            await VariantSpecification.create({
+                php_id:item.id,
+                name:item.name,
+                created_at:item.created_at,
+                updated_at:item.updated_at,
+            })
+        }
+    }
+    res.json("Specification Addedd!!")
+}
+export const MysqlToMongodbConvertDatabaseVariantKeySpecification = async (req, res) => {
+
+    const GetData = await VariantkeySpec.findAll({})
+
+    for (const item of GetData) {
+
+        const findVAriantKeySpecification = await VariantKey.findOne({ name: item.name })
+        
+        if (!findVAriantKeySpecification) {
+        // console.log("Variant key created!!", item.id)
+        const findvehicleId = await vehicle_information.findOne({ php_id: item.vehicle_information_id })
+        const findPriceVarintId = await PriceVariant.findOne({ php_id: item.variant_id })
+        const findVariantSpecId = await VariantSpecification.findOne({ php_id: item.specification_id })
+        const findKeySpecification = await keyspecification.findOne({ php_id: item.variant_key_id })
+
+            await VariantKey.create({
+                php_id:item.id,
+
+                vehicle_information_id:findvehicleId?._id  || null,
+                variant_id:findPriceVarintId?._id || null,
+                specification_id:findVariantSpecId?._id || null,
+                variant_key_id:findKeySpecification?._id || null,
+
+                php_vehicle_information_id:item.vehicle_information_id,
+                php_variant_id:item.variant_id,
+                php_specification_id:item.specification_id,
+                php_variant_key_id:item.variant_key_id,
+
+                name:item.name,
+                value:item.value,
+                is_feature:item.is_feature,
+                is_specification:item.is_specification,
+                is_update:item.is_update,
+                show_key_feature:item.show_key_feature,
+                show_overview:item.show_overview,
+                is_scraping:item.is_scraping,
+                created_at:item.created_at,
+                updated_at:item.updated_at,
+            })
+
+        }
+    }
+    res.json("VarientKeySpecification Addedd!")
+}
 export const MysqltoMongodbConver = async (req, res) => {
     try {
         const postData = await vehicle_information.aggregate([
@@ -383,3 +523,4 @@ export const MysqltoMongodbConver = async (req, res) => {
         console.log(error)
     }
 }
+

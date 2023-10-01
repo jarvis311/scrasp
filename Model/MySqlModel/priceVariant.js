@@ -68,12 +68,6 @@ export const PriceVariantTable = sequelize.define("VehiclePriceVariant", {
     updated_at: {
         type: DataTypes.DATE
     },
-    createdAt: {
-        type: DataTypes.DATE
-    },
-    updatedAt: {
-        type: DataTypes.DATE
-    },
     deleted_at: {
         type: DataTypes.DATE
     },

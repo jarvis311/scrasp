@@ -447,7 +447,7 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
                         if (v_spe_exist) {
                             // const updateQr = ("UPDATE " + `varient_key ` + "SET " + `vehicle_information_id = ${vehicle_information}, variant_id = ${variant_id}, specification_id = ${spec_id}, name = '${spec_name}',value = '${spec_value}'  WHERE vehicle_information_id = ${vehicle_information} AND variant_id = ${variant_id} AND specification_id = ${spec_id} AND name = '${spec_name}'`)
                             // const updateVar = await con.query(updateQr)
-                            let update = await VariantKey.findOneAndUpdate({ $and: [{ vehicle_information_id: vehicle_information }, { variant_id: variantObjectId }, { specification_id: used_var.specification_id }, { name: spec_name }] }, used_var, { new: true })
+                            let update = await VariantKey.findOneAndUpdate({ $and: [{ vehicle_information_id: vehicle_information }, { variant_id: variantObjectId }, { specification_id: used_var.spec_id }, { name: spec_name }] }, used_var, { new: true })
 
                         } else {
                             const cheakidOfVariantKey = await VariantKey.findOne().select({ php_id: 1 }).sort({ php_id: -1 });
@@ -711,7 +711,8 @@ const get_specific_car = async (link, input1, brand) => {
 
     if ('items' in data_res_arr) {
         for (const val of data_res_arr?.items) {
-
+            // console.log(data_res_arr?.items)
+            console.log('res_specific_bike>>>', res_specific_bike, "+++++", val.modelName)
             if (res_specific_bike == val.modelName) {
                 let cheakid = await vehicle_information.findOne().select({ php_id: 1 }).sort({ php_id: -1 })
                 let tokenid = cheakid ? cheakid.php_id + 1 : 1
@@ -762,39 +763,41 @@ const get_specific_car = async (link, input1, brand) => {
                     bodytype_id = bodyTypedata_._id
                     php_bodytype_id = bodyTypedata_.php_id
                 }
+                // console.log("first")
+                // let client = await axios.get("https://www.cardekho.com/" + val.dcbdto.modelPriceURL)
 
-                var client = await axios.get("https://www.bikedekho.com" + val.dcbdto.modelPriceURL)
-                var html = cheerio.load(client.data).html()
-                var response = html.split('</script>');
-                var data_respone = get_string_between(response[11], '<script>window.__INITIAL_STATE__ = ', " window.__isWebp =  false;")
-                var data1 = data_respone.split("; window.__CD_DATA__ =")
-                var data2 = data1[0].split('" ",{}; window.__isMobile')
-                let res_arr = JSON.parse(data2)
+                // let html = cheerio.load(client.data).html()
+                // let response = html.split('</script>');
+                // let data_respone = get_string_between(response[11], '<script>window.__INITIAL_STATE__ = ', " window.__isWebp =  false;")
+                // let data1 = data_respone.split("; window.__CD_DATA__ =")
+                // let data2 = data1[0]?.split('" ",{}; window.__isMobile') || ""
+                // console.log('data2', data2)
+                // let res_arr = data2 ? JSON?.parse([]) : []
 
 
-                if (res_arr.items[0].exShowroomPrice) {
-                    if (res_arr.items[0].exShowroomPrice == "") {
-                        showroom_price = 0
-                    } else {
-                        showroom_price = res_arr.items[0].exShowroomPrice
-                    }
-                }
-                let rto_price
-                if (showroom_price < 25000) {
-                    rto_price = ((showroom_price * 2) / 100)
-                } else {
-                    if (showroom_price > 25000 && showroom_price < 45000) {
-                        rto_price = ((showroom_price * 4) / 100)
-                    } else {
-                        if (showroom_price > 45000 && showroom_price < 60000) {
-                            rto_price = ((showroom_price * 6) / 100)
-                        } else {
-                            if (showroom_price > 60000) {
-                                rto_price = ((showroom_price * 8) / 100)
-                            }
-                        }
-                    }
-                }
+                // if (res_arr?.items[0].exShowroomPrice) {
+                //     if (res_arr.items[0].exShowroomPrice == "") {
+                //         showroom_price = 0
+                //     } else {
+                //         showroom_price = res_arr.items[0].exShowroomPrice
+                //     }
+                // }
+                // let rto_price
+                // if (showroom_price < 25000) {
+                //     rto_price = ((showroom_price * 2) / 100)
+                // } else {
+                //     if (showroom_price > 25000 && showroom_price < 45000) {
+                //         rto_price = ((showroom_price * 4) / 100)
+                //     } else {
+                //         if (showroom_price > 45000 && showroom_price < 60000) {
+                //             rto_price = ((showroom_price * 6) / 100)
+                //         } else {
+                //             if (showroom_price > 60000) {
+                //                 rto_price = ((showroom_price * 8) / 100)
+                //             }
+                //         }
+                //     }
+                // }
                 // if (val.minOnRoadPrice) {
                 //     if (val.minOnRoadPrice == "") {
                 //         on_road_price = 0
@@ -824,7 +827,7 @@ const get_specific_car = async (link, input1, brand) => {
                     model_popularity: model_popularity,
                     mileage: mileage,
                     engine: engine,
-                    rto_price: rto_price,
+                    // rto_price: rto_price,
                     style_type: style_type,
                     showroom_price: showroom_price,
                     on_road_price: on_road_price,
@@ -854,7 +857,7 @@ const get_specific_car = async (link, input1, brand) => {
 
                 return (await helper.successResponse("Car scrapping succesfully!"))
             } else {
-                return (await helper.macthError('Car Model Not Found'))
+                 await helper.macthError('Car Model Not Found')
             }
         }
         if ('upcomingCars' in data_res_arr) {

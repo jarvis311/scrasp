@@ -185,12 +185,12 @@ export const MysqlToMongodbConvertDatabaseVehicleInformation = async (req, res) 
 }
 export const MysqlToMongodbConvertDatabasePriceVariant = async (req, res) => {
 
-    const GetData = await PriceVariantTable.findAll({})
+    const GetData = await PriceVariantTable.findAll({where: { deleted_at:null }})
 
     for (const item of GetData) {
-        const findPriceVariant = await PriceVariant.findOne({ name: item.name })
+        // const findPriceVariant = await PriceVariant.findOne({ name: item.name })
 
-        if (!findPriceVariant) {
+        // if (!findPriceVariant) {
 
         const findvehicleId = await vehicle_information.findOne({ php_id: item.vehicle_information_id })
 
@@ -222,7 +222,7 @@ export const MysqlToMongodbConvertDatabasePriceVariant = async (req, res) => {
                         deleted_at:item.deleted_at,
                         deleted_by:item.deleted_by,
             })
-        }
+        // }
     }
     res.json("PriceVariant Addedd!!")
 }
@@ -376,11 +376,11 @@ export const MysqltoMongodbConver = async (req, res) => {
         ])
         const mongooseData = postData[0]
 
+        
         if (mongooseData) {
             try {
                 const findIsExistOrNot = await VehicleInformationTable.findOne({ where: { id: mongooseData.php_id } })
                 if (findIsExistOrNot) {
-                    console.log(mongooseData.php_id)
                     await VehicleInformationTable.update({
                         model_name: mongooseData.model_name,
                         fuel_type: mongooseData.fuel_type,
@@ -395,11 +395,46 @@ export const MysqltoMongodbConver = async (req, res) => {
                         max_price: Number(mongooseData.max_price),
                     },
                         { where: { id: mongooseData.php_id } })
+                    for (const item of mongooseData.priceVariant) {
+                        await PriceVariantTable.update({
+                            engine:item.engine,
+                            price_range:item.price_range,
+                            price:item.price,
+                            review_count:item.review_count,
+                            fuel_type:item.fuel_type,
+                            ex_show_room_rice:item.ex_show_room_rice,
+                            mileage:item.mileage,
+                            rto_price:Number(item.rto_price),
+                            insurance_price:item.insurance_price,
+                            other_price:item.other_price,
+                            on_road_price:item.on_road_price,
+
+                        },{where:{ id:item.php_id } })
+                    }
+
+                    for (const item of mongooseData.modelColor) {
+                        await ModelColorTable.update({
+                            color_name: item.color_name,
+                            color_code:item.color_code
+                        },
+                        {where : {id: item.php_id}}
+                        )
+                    }
+                    for (const item of mongooseData.keySpec) {
+                        await ModelColorTable.update({
+                            name: item.name,
+                            value: item.value
+                        },
+                        {where : {id: item.php_id}}
+                        )
+                    }
+                    
+
                 } else {
                     // console.log("else findIsExistOrNot")
                     const createData = await VehicleInformationTable.create({
                         id: mongooseData.php_id,
-                        brand_id: mongooseData.brand_id.id,
+                        brand_id: mongooseData.brand_php_id,
                         category_id: mongooseData.category_php_id,
                         bodytype_id: mongooseData.php_bodytype_id,
                         bind_id: mongooseData?.bind_id || 0,
@@ -431,8 +466,9 @@ export const MysqltoMongodbConver = async (req, res) => {
                         insurance_price: mongooseData.insurance_price,
                         other_price: mongooseData.other_price,
                     })
+
                     if (createData) {
-                        console.log("---------createData--------")
+                        // console.log("---------createData--------")
                         if ("modelColor" in mongooseData) {
                             for (const item of mongooseData?.modelColor) {
                                 await ModelColorTable.create({

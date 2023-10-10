@@ -17,8 +17,7 @@ var link;
 const scrap_cars = async (input, brand) => {
     try {
         link = input.link
-        var brand = brand
-        var brand_id = brand._id
+        let brand_id = brand._id
         let brand_php_id = brand.php_id
         const findCategoryId = await CategoryModel.findOne({ php_id: Number(input.category) })
         let category_id = findCategoryId._id
@@ -105,9 +104,12 @@ const scrap_cars = async (input, brand) => {
                 }
 
                 if (min_price.includes('Lakh')) {
-                    let price = min_price.replace(/[^0-9-]+/g, '');
-                    price += '000';
-                    min_price = price;
+                    // let price = min_price.replace(/[^0-9-]+/g, '');
+                    let price = min_price.replace(/[^0-9.]/g, '')
+                    const numericValue = parseFloat(price);
+                    min_price = numericValue * 100000;
+                    // price += '000';
+                    // min_price = price;
                 }
                 if (max_price != 0) {
 
@@ -375,7 +377,7 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
             // const qr = ("UPDATE " + `vehicle_price_variant ` + "SET " + `vehicle_information_id = ${vehicle_information_id},name='${name}',link='${link}',engine=${engine},price_range='${price_range}',status='${status}',fuel_type='${fuel_type}',on_road_price=${on_road_price}, review_count = ${review_count}, mileage=${mileage},ex_show_room_rice=${ex_show_room_rice} WHERE vehicle_information_id = ${vehicle_information_id} AND name = '${name}'`)
             // const update = await con.query(qr)
             variantObjectId = variant_exist._id
-            php_variant_id = variantObjectId.php_id
+            php_variant_id = variant_exist.php_id
             // console.log('If')
             const findPriceVarianr = await PriceVariant.findOneAndUpdate({ $and: [{ vehicle_information_id: vehicle_information_id }, { name: name }] }, variantobje, { new: true })
         }
@@ -388,7 +390,15 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
         }
 
     }
-    let used_var
+    let used_var = {
+        variant_id: variantObjectId,
+        php_variant_id:php_variant_id,
+        vehicle_information_id: vehicle_information,
+        php_vehicle_information_id: php_vehicle_information_id
+
+    }
+
+    console.log('used_var', used_var)
     if ('specsTechnicalJson' in child_data) {
         if ('specification' in child_data.specsTechnicalJson) {
             for (const specification of child_data.specsTechnicalJson.specification) {
@@ -415,11 +425,11 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
 
                 }
 
-                used_var = {
-                    variant_id: variantObjectId,
-                    vehicle_information_id: vehicle_information,
-                    specification_id: spec_id
-                }
+                // used_var = {
+                    // variant_id: variantObjectId,
+                    // vehicle_information_id: vehicle_information,
+                // }
+                used_var.specification_id = spec_id
                 async function processItems1() {
                     for (const s of specification.items) {
                         let spec_name = s.text ? s.text : "NA"
@@ -429,9 +439,9 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
                         // const v_spe_exist = rows[0]
                         used_var.name = spec_name
                         used_var.value = spec_value
-                        used_var.php_variant_id = php_variant_id
+                        // used_var.php_variant_id = php_variant_id
                         used_var.php_specification_id = php_specification_id
-                        used_var.php_vehicle_information_id = php_vehicle_information_id
+                        // used_var.php_vehicle_information_id = php_vehicle_information_id
                         const cheakidOfKeySpec = await keyspecification.findOne().select({ php_id: 1 }).sort({ php_id: -1 });
                         const tokenIdOfKeySpec = await (cheakidOfKeySpec ? cheakidOfKeySpec.php_id + 1 : 1);
                         const findOrUpdateKeySpesificationn = await keyspecification.findOne({ name: spec_name })
@@ -477,7 +487,7 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
                 let spec_id
                 let php_specification_id
                 if (spec_exist) {
-                    spec_id = spec_exist.php_id
+                    spec_id = spec_exist._id
                     php_specification_id = spec_exist.php_id
                 } else {
                     // const qr = ("INSERT INTO variant_specifications (name)") + ' VALUES ' + `('${spec_name}')`
@@ -487,11 +497,12 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
                     spec_id = CreateVariantSpec._id
                     php_specification_id = CreateVariantSpec.php_id
                 }
-                let used_var = {
-                    vehicle_information_id: vehicle_information,
-                    variant_id: variantObjectId,
-                    specification_id: spec_id
-                }
+                // let used_var = {
+                //     vehicle_information_id: vehicle_information,
+                //     variant_id: variantObjectId,
+                // }
+                used_var.specification_id = spec_id
+                used_var.php_specification_id = php_specification_id
                 async function processItems2() {
                     for (const s of featured.items) {
                         let spec_name = s.text ? s.text : "NA"
@@ -501,9 +512,8 @@ const get_variant_details = async (picture_url, vehicle_information, exShowRoomP
                         // const v_spe_exist = rows[0]
                         used_var.name = spec_name
                         used_var.value = spec_value
-                        used_var.php_vehicle_information_id = php_vehicle_information_id
-                        used_var.php_variant_id = php_variant_id
-                        used_var.php_specification_id = php_specification_id
+                        // used_var.php_vehicle_information_id = php_vehicle_information_id
+                        // used_var.php_variant_id = php_variant_id
                         const cheakidOfKeySpec = await keyspecification.findOne().select({ php_id: 1 }).sort({ php_id: -1 });
                         const tokenIdOfKeySpec = await (cheakidOfKeySpec ? cheakidOfKeySpec.php_id + 1 : 1);
                         const findOrUpdateKeySpesificationn = await keyspecification.findOne({ name: spec_name })
@@ -710,8 +720,8 @@ const get_specific_car = async (link, input1, brand) => {
     var data_res_arr = await scrap_coman_code(new_bike_url)
 
     if ('items' in data_res_arr) {
+        // console.log("data_res_arr?.items",data_res_arr?.items)
         for (const val of data_res_arr?.items) {
-            // console.log(data_res_arr?.items)
             console.log('res_specific_bike>>>', res_specific_bike, "+++++", val.modelName)
             if (res_specific_bike == val.modelName) {
                 let cheakid = await vehicle_information.findOne().select({ php_id: 1 }).sort({ php_id: -1 })
@@ -722,7 +732,7 @@ const get_specific_car = async (link, input1, brand) => {
                 const avg_rating = val.avgRating ? val.avgRating : 0
                 const review_count = val.reviewCount ? val.reviewCount : 0
                 const variant_name = val.variantName ? val.variantName : 0
-                const min_price = val.minPrice ? val.minPrice : 0
+                let min_price = val.minPrice ? val.minPrice : 0
                 const max_price = val.maxPrice ? val.maxPrice : 0
                 const price_range = val.priceRange ? val.priceRange : "NA"
                 const status = val.status ? val.status : "NA"
@@ -762,6 +772,14 @@ const get_specific_car = async (link, input1, brand) => {
                     let bodyTypedata_ = await Bodytypes.create({ php_id: tokenIdOfBodytype, name: style_type, category_id: category_id, image: '', status: 1, position: 0 })
                     bodytype_id = bodyTypedata_._id
                     php_bodytype_id = bodyTypedata_.php_id
+                }
+                if (min_price.includes('Lakh')) {
+                    // let price = min_price.replace(/[^0-9-]+/g, '');
+                    let price = min_price.replace(/[^0-9.]/g, '')
+                    let numericValue = parseFloat(price);
+                    min_price = numericValue * 100000;
+                    // price += '000';
+                    // min_price = price;
                 }
                 // console.log("first")
                 // let client = await axios.get("https://www.cardekho.com/" + val.dcbdto.modelPriceURL)
@@ -842,17 +860,17 @@ const get_specific_car = async (link, input1, brand) => {
                     var vehicle_information_id = car_exist._id
                     let php_vehicle_information_id = car_exist.php_id
                     await vehicle_information.findOneAndUpdate({ $and: [{ model_name: model_name }, { brand_id: brand_id }] }, cardata, { new: true })
-
                     await get_vehicle_other_details(new_car_url, vehicle_information_id, 0, cardata, php_vehicle_information_id)
+                    console.log("Update")
                 } else {
-
                     let response = await vehicle_information.create({ ...cardata, php_id: php_id })
                     console.log("vehicle_information created!!! 2")
                     // console.time("response time")
+                    console.log("Createe")
                     vehicle_information_id = response._id
                     let php_vehicle_information_id = response.php_id
-
                     const createData = await get_vehicle_other_details(new_car_url, vehicle_information_id, 0, cardata, php_vehicle_information_id)
+
                 }
 
                 return (await helper.successResponse("Car scrapping succesfully!"))
@@ -862,9 +880,9 @@ const get_specific_car = async (link, input1, brand) => {
         }
         if ('upcomingCars' in data_res_arr) {
             var url = data_res_arr.upcomingCars.url ? data_res_arr.upcomingCars.url : null
-            // if (url) {
-            //     await upcoming_car_by_brand(url, input)
-            // }
+            if (url) {
+                await upcoming_car_by_brand(url, input1,res_specific_bike)
+            }
 
         } else {
             return (await helper.macthError('Upcoming Car Not Scrapped'))
@@ -897,30 +915,34 @@ const get_string_between = (string, start, end) => {
 
 }
 
-const upcoming_car_by_brand = async (url, input) => {
+const upcoming_car_by_brand = async (url, input,modelNameOfCar) => {
     var new_car_url = 'https://www.cardekho.com' + url
     var data_res_arr = await scrap_coman_code(new_car_url)
     if ('items' in data_res_arr) {
-        const upcome = await insert_cars_without_items(data_res_arr.items, 'is_upcoming', input)
+        // console.log('data_res_arr upcomming>>>>>', data_res_arr)
+        const upcome = await insert_cars_without_items(data_res_arr.items, 'is_upcoming', input,modelNameOfCar)
         if (upcome) {
             if ('popularCars' in data_res_arr.pages) {
                 if ('popular' in data_res_arr.popularCars) {
-                    const create = await insert_cars_without_items(data_res_arr.popularCars, 'is_popular_search', input)
+                    const create = await insert_cars_without_items(data_res_arr.popularCars, 'is_popular_search', input,modelNameOfCar)
                 }
             }
         }
     }
 }
 
-const insert_cars_without_items = async (data_res_arr, type, input) => {
+const insert_cars_without_items = async (data_res_arr, type, input, modelNameOfCar) => {
     for (const val of data_res_arr) {
+        console.log('modelNameOfCar>>>>>>>>>>>', modelNameOfCar)
+        if(val.modelName === modelNameOfCar ){
 
         let category_id
         const category_id_ = await CategoryModel.findOne({ php_id: Number(input.category) })
         category_id = category_id_._id
         let category_php_id = category_id_.php_id
 
-        let brand = await Brands.findOne({ $and: [{ category_id: Number(input.category) }, { name: input.brand }] })
+        let brand = await Brands.findOne({ $and: [{ php_category_id: Number(input.category) }, { name: input.brand }] })
+
         let brand_id = brand._id
         let brand_php_id = brand.php_id
         const model_name = val.modelName ? val.modelName : val.name
@@ -928,8 +950,8 @@ const insert_cars_without_items = async (data_res_arr, type, input) => {
         const avg_rating = val.avgRating ? val.avgRating : 0
         const review_count = val.reviewCount ? val.reviewCount : 0
         const variant_name = val.variantName ? val.variantName : "NA"
-        const min_price = val.minPrice ? val.minPrice.replace(',', '') : 0
-        const max_price = val.maxPrice ? val.maxPrice.replace('.', '') : "NA"
+        let min_price = val.minPrice ? val.minPrice.replace(',', '') : 0
+        let max_price = val.maxPrice ? val.maxPrice.replace('.', '') : "NA"
         const price_range = val.priceRange ? val.priceRange : "NA"
         const status = val.status ? val.status : "NA"
         const launched_at = val.launchedAt ? val.launchedAt : "NA"
@@ -949,7 +971,14 @@ const insert_cars_without_items = async (data_res_arr, type, input) => {
         is_designer = style_type === "NA" ? 1 : 0
 
         const type = 1;
-
+        if (min_price.includes('Lakh')) {
+            // let price = min_price.replace(/[^0-9-]+/g, '');
+            let price = min_price.replace(/[^0-9.]/g, '')
+            let numericValue = parseFloat(price);
+            min_price = numericValue * 100000;
+            // price += '000';
+            // min_price = price;
+        }
 
         let car_exist = await vehicle_information.findOne({ model_name: model_name })
 
@@ -990,8 +1019,13 @@ const insert_cars_without_items = async (data_res_arr, type, input) => {
         let cheakid = await vehicle_information.findOne().select({ php_id: 1 }).sort({ php_id: -1 })
         let tokenid = cheakid ? cheakid.php_id + 1 : 1
         const php_id = tokenid
+
+        let php_vehicle_information_id
+        let vehicle_information_id
+
         if (car_exist) {
             vehicle_information_id = car_exist._id
+            php_vehicle_information_id = car_exist.php_id
             if (model_url == "NA") {
                 if (val.image) {
                     //********************Image Running**********************/
@@ -1002,7 +1036,7 @@ const insert_cars_without_items = async (data_res_arr, type, input) => {
 
             }
         }
-        let php_vehicle_information_id
+       
         if (!car_exist) {
             // const qr = ("INSERT INTO vehicle_information( category_id, model_name, fuel_type, avg_rating, review_count, variant_name, min_price, max_price, status, launched_at, Launch_date, model_popularity, mileage, engine, style_type, showroom_price, on_road_price, link )") + ' VALUES ' + (`( ${category_id},'${model_name}','${fuel_type}',${avg_rating},${review_count},'${variant_name}','${min_price}','${max_price}','${status}','${launched_at}','${Launch_date}',${model_popularity},${mileage},'${engine}','${style_type}',${showroom_price},${on_road_price},'${link}')`)
 
@@ -1010,13 +1044,12 @@ const insert_cars_without_items = async (data_res_arr, type, input) => {
 
             let response = await vehicle_information.create({ ...insert_car, php_id: php_id })
             console.log("vehicle_information created!! 3")
-            var vehicle_information_id = response._id
+             vehicle_information_id = response._id
             php_vehicle_information_id = response.php_id
         }
         var model_url = val.modelUrl
-        php_vehicle_information_id = car_exist?.php_id || 0
         var car_images = await get_vehicle_other_details_latest(model_url, vehicle_information_id, 0, input, php_vehicle_information_id)
-
+    }
     }
 }
 
@@ -1057,7 +1090,7 @@ const get_vehicle_other_details_latest = async (url, vehicle_information_id, var
         // const qr = ("UPDATE " + `vehicle_information ` + "SET " + ` key_specs = '${key_specs}' WHERE id = ${vehicle_information_id}`)
         // const update = await con.query(qr)
 
-        let update = await vehicle_information.findOneAndUpdate({ php_id: vehicle_information_id }, { key_specs: key_specs }, { new: true })
+        let update = await vehicle_information.findOneAndUpdate({ _id: vehicle_information_id }, { key_specs: key_specs }, { new: true })
 
 
         if ('url' in variant_data_arr) {
@@ -1103,7 +1136,8 @@ const get_vehicle_other_details_latest = async (url, vehicle_information_id, var
                         var url = child.url
                         var exShowRoomPrice = child.exShowRoomPrice ? child.exShowRoomPrice : 0
                         var onRoadPrice = child.onRoadPrice ? child.onRoadPrice : 0
-                        await get_variant_details(url, vehicle_information_id, exShowRoomPrice, onRoadPrice, input)
+                        console.log('php_vehicle_information_id>>>>>>', php_vehicle_information_id)
+                        await get_variant_details(url, vehicle_information_id, exShowRoomPrice, onRoadPrice, input, php_vehicle_information_id)
                     })
                 }
             })
